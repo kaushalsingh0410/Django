@@ -5,7 +5,8 @@
 
 <div class="row m-2">
     <div class="col ">
-<form method="POST" class = 'user-form'>
+<form method="POST" id = 'user-form'>
+    {% csrf_token %}
     <input type="hidden",id = 'id_id'>
 {{ form.as_p }}
 <button type ='submit' class = 'btn btn-primary' >Submit</button>
@@ -60,6 +61,29 @@
 </div>
 
 
+<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+
+<script>
+ $(document).ready(function (){
+
+   
+
+    console.log('Page is ready')
+    $('#user-form').on('submit', function(e){
+        e.preventDefault()
+        // const query = $(this).serialize();
+        // console.log('query',query)
+        const url = "{% url 'index' %}"
+        console.log('url',url)
+        $.post(url,$(this).serialize(),function(response){
+            console.log("response",response);
+        })
+        
+
+    })
+ })
+
+</script>
 
 
 
