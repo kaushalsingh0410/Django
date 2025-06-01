@@ -4,82 +4,105 @@
 {% block 'content' %}
 
 <div class="row m-2">
-    <div class="col ">
-<form method="POST" id = 'user-form'>
-    {% csrf_token %}
-    <input type="hidden",id = 'id_id'>
-{{ form.as_p }}
-<button type ='submit' class = 'btn btn-primary' >Submit</button>
-</form>
-</div>
+  <div class="col ">
+    <form method="POST" id='user-form'>
+      {% csrf_token %}
+      <input type="hidden" id='id_id'>
+      {{ form.as_p }}
+      <button type='submit' class='btn btn-primary'>Submit</button>
+    </form>
+  </div>
 
-<div class="col">
+  <div class="col">
 
-  
+
     <table class="table table-striped table-hover ">
-  <thead class = 'table-dark '>
-    <tr>
-      <th scope="col">#</th>
-      <th scope="col">Name</th>
-      <th scope="col">Email</th>
-      <th scope="col">Comment</th>
-      <th scope="col">Action</th>
-    </tr>
-  </thead>
-  <tbody id = 'table'>
-    {{ tableHtml }}
-  
-  </tbody>
-</table>
-</div>
+      <thead class='table-dark '>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Name</th>
+          <th scope="col">Email</th>
+          <th scope="col">Comment</th>
+          <th scope="col">Action</th>
+        </tr>
+      </thead>
+      <tbody id='table'>
+        {{ tableHtml }}
+
+      </tbody>
+    </table>
+  </div>
 
 </div>
 
 
-<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+  crossorigin="anonymous"></script>
 
 <script>
- $(document).ready(function (){
+  $(document).ready(function () {
+    $('#id_id1').text('hi ')
 
-   
+
 
     console.log('Page is ready')
-    $('#user-form').on('submit', function(e){
-        e.preventDefault()
-        // const query = $(this).serialize();
-        // console.log('query',query)
+    $('#user-form').on('submit', function (e) {
+      e.preventDefault()
+      // const query = $(this).serialize();
+      // console.log('query',query)
 
-        // const pk = $('#id_id').val();
-        // console.log('pk',pk);
-        const url = "{% url 'index' %}"
-        console.log('url',url)
-        $.post(url,$(this).serialize(),function(response){
-            console.log("response",response);
-            $('#table').prepend(response.tableHtml);
+      const pk = $('#id_id').val();
 
-            $('#table tr').each(function(index) {
-              $(this).find('th').first().text(index+1);
-            } )
-        })
+      console.log('pk', pk);
+      const url = pk ? `/app/${pk}/` : "{% url 'index' %}"
+      console.log('url', url)
+      $.post(url, $(this).serialize(), function (response) {
+        console.log("response", response);
+        if (response.update) {
+          console.log('thid is update 12')
+          const row = $(`tr[data-id = '${response.id}']`);
+          row.replaceWith(response.tableHtml);
+          console.log("response.tableHtml", response.tableHtml);
+        }
+        else {
+          $('#table').prepend(response.tableHtml);
+          $('#table tr').each(function (index) {
+            $(this).find('th').first().text(index + 1);
+          })
+        }
+      })
 
-        $('#user-form')[0].reset()
+      $('#user-form')[0].reset()
+      $('#id_id').val();
 
     });
-    
-    $(document).on('click','.edit-btn',function(){
+
+    $(document).on('click', '.edit-btn', function () {
       console.log('this is edit button')
       const editBtn = $(this);
+      console.log('id', editBtn.data('id'))
       $('#id_id').val(editBtn.data('id'));
       $('#id_name').val(editBtn.data('name'));
       $('#id_email').val(editBtn.data('email'));
       $('#id_comment').val(editBtn.data('comment'));
     })
-    
-    $(document).on('click','.delete-btn',function(){
+
+    $(document).on('click', '.delete-btn', function () {
+      const deleteBtn = $(this);
+      if (confirm('Are yor sure you want to delete this user?')) {
+        $.post('{% url "delete" %}',{pk:$(this).data('id'), csrfmiddlewaretoken: '{{ csrf_token }}' },function(response){
+          console.log('delete request',response)
+          if (response.msg){
+            deleteBtn.closest('tr').remove();
+          }
+        })
+
+
+      }
       console.log('this is delete button')
     })
 
- })
+  })
 
 </script>
 
