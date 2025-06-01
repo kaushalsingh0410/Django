@@ -7,4 +7,5 @@ urlpatterns = [
     path('<int:pk>/', index,name='index-update'),
     path('delete/', delete,name='delete'),
     path('table/', table,name='table'),
+    path('search/', search,name='search'),
 ]

@@ -3,6 +3,9 @@ from django.http import HttpResponse,JsonResponse
 from .form import UserForm
 from .models import User
 from django.template.loader import render_to_string
+from django.db.models import Q
+
+
 def index(request,pk = None):
 
     data = {
@@ -62,3 +65,18 @@ def delete(request):
 def table(request):
     # return render(request,'app/tableView.html'  )
     return render(request,'app/tableView.html',{'tableHtml':render_to_string('app/table.html',{'query':User.objects.all()})})
+
+def search(request):
+    if request.method == 'POST':
+        searchquery = request.POST.get('searchquery')
+        rows = User.objects.filter(Q(name__icontains = searchquery) | Q(email__icontains = searchquery) | Q(comment__icontains = searchquery))
+        tableHtml = None
+        if len(rows):
+            tableHtml = render_to_string('app/table.html',{'query':rows})
+        else:
+            tableHtml = f'''<tr >
+                        <td colspan = '5' class = 'text-center' > No record found for <b>{searchquery} </b></td>
+                        </tr>'''
+
+        return JsonResponse({'tableHtml':tableHtml})
+    return JsonResponse({'msg':'this is search'})

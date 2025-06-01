@@ -33,8 +33,10 @@
                         <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
                     </li>
                 </ul>
-                <form class="d-flex">
-                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                <form class="d-flex" id = 'search'>
+                    {% csrf_token %}
+                    <input class="form-control me-2" type="search" id = 'searchquery' name = 'searchquery' placeholder="Search" aria-label="Search">
+
                     <button class="btn btn-outline-success" type="submit">Search</button>
                 </form>
             </div>
@@ -47,5 +49,5 @@
 
 
     <div class="bg-primary  text-center text-white">
-        <h1>This is {{heading}} page  {{ request.path }}</h1>
+        <h1>This is {{heading}} page </h1>
     </div>
