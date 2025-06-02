@@ -4,52 +4,45 @@ from .form import UserForm
 from .models import User
 from django.template.loader import render_to_string
 from django.db.models import Q
+from django.core.paginator import Paginator
+
 
 
 def index(request,pk = None):
-
-    data = {
-        'title':'Index',
-        'heading':'Form',
-        'form':UserForm(),
-        }
+    print('inside index')
+    data = {'title':'Index','heading':'Form','form':UserForm(),}
     print('inside index request',request.method)
     if request.method == 'POST':
         form = None
         if pk:
             user = User.objects.get(pk =pk)
             form = UserForm(request.POST,instance = user)
-            print('This is update')
-            # name = request.POST.get('name')
-            # email = request.POST.get('email')
-            # comment = request.POST.get('comment')
-            # user = User.objects.create(name =name,email = email,comment = comment)
-            
-            # tableHtml = render_to_string('app/table.html',{'query':[user]})
-            # return JsonResponse({'msg':'Good',"tableHtml":tableHtml})
-            # return JsonResponse({'msg':'update'})
         else:
             form = UserForm(request.POST)
-            # name = request.POST.get('name')
-            # email = request.POST.get('email')
-            # comment = request.POST.get('comment')
-            # user = User.objects.create(name =name,email = email,comment = comment)
         if form.is_valid():
             user = form.save()
             
-            tableHtml = render_to_string('app/table.html',{'query':[user]})
-            return JsonResponse({'msg':'Good',
-                                 'id':user.id,
-                                 "tableHtml":tableHtml,
-                                 'update':pk is not None})
+            tableHtml = render_to_string('app/partials/table.html',{'query':[user]})
+            return JsonResponse({'msg':'Good','id':user.id,"tableHtml":tableHtml,'update':pk is not None})
+
+    page_number = request.GET.get('page')
+    user = User.objects.order_by('-id')
+    paginator = Paginator(user,3)
+    page_obj = paginator.get_page(page_number)
+    tableHtml = render_to_string('app/partials/table.html',{"query":page_obj})
+    paginator = render_to_string('app/partials/paginator.html',{"page_obj":page_obj})
+
+    if page_number:
+        return JsonResponse({'tableHtml':tableHtml,'paginator':paginator})        
           
-
-
-
-
         
-    data['tableHtml'] = render_to_string('app/table.html',{"query":User.objects.order_by('-id')})
-    # print('table',data['table'],type(data['table']),len(data['table']))
+    data['tableHtml'] = tableHtml 
+    data['paginator'] = paginator 
+    data['page_obj'] = page_obj 
+
+    print('paginator',paginator)
+    print('page_obj',page_obj)
+    print('page_number',page_number)
 
     return render(request,'app/index.html',data)
 
@@ -63,8 +56,7 @@ def delete(request):
 
 
 def table(request):
-    # return render(request,'app/tableView.html'  )
-    return render(request,'app/tableView.html',{'tableHtml':render_to_string('app/table.html',{'query':User.objects.all()})})
+    return render(request,'app/tableView.html',{'tableHtml':render_to_string('app/partials/table.html',{'query':User.objects.all()})})
 
 def search(request):
     if request.method == 'POST':
@@ -72,7 +64,7 @@ def search(request):
         rows = User.objects.filter(Q(name__icontains = searchquery) | Q(email__icontains = searchquery) | Q(comment__icontains = searchquery))
         tableHtml = None
         if len(rows):
-            tableHtml = render_to_string('app/table.html',{'query':rows})
+            tableHtml = render_to_string('app/partials/table.html',{'query':rows})
         else:
             tableHtml = f'''<tr >
                         <td colspan = '5' class = 'text-center' > No record found for <b>{searchquery} </b></td>

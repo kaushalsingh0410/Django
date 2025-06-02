@@ -31,6 +31,11 @@
 
       </tbody>
     </table>
+      <nav id="page-nav"  aria-label="Page navigation example">
+      <h1>pagination</h1>
+      {{ paginator }}
+      </nav>
+
   </div>
 
 </div>
@@ -41,7 +46,7 @@
 
 <script>
   $(document).ready(function () {
-    $('#id_id1').text('hi ')
+
 
 
 
@@ -90,30 +95,44 @@
     $(document).on('click', '.delete-btn', function () {
       const deleteBtn = $(this);
       // if (confirm('Are yor sure you want to delete this user?')) {
-        $.post('{% url "delete" %}',{pk:$(this).data('id'), csrfmiddlewaretoken: '{{ csrf_token }}' },function(response){
-          console.log('delete request',response)
-          if (response.msg){
-            deleteBtn.closest('tr').remove();
-          }
-        })
+      $.post('{% url "delete" %}', { pk: $(this).data('id'), csrfmiddlewaretoken: '{{ csrf_token }}' }, function (response) {
+        console.log('delete request', response)
+        if (response.msg) {
+          deleteBtn.closest('tr').remove();
+        }
+      })
 
 
       // }
       console.log('this is delete button')
     })
 
-  })
 
-  $(document).on('submit','#search',function(e){
-    e.preventDefault();
-    const searchquery = $('#searchquery').val();
-    $.post('{% url "search" %}',$(this).serialize(),function(response){
-      console.log('response',response);
-      $('#table').html(response.tableHtml)
+
+    $(document).on('submit', '#search', function (e) {
+      e.preventDefault();
+      const searchquery = $('#searchquery').val();
+      $.post('{% url "search" %}', $(this).serialize(), function (response) {
+        console.log('response', response);
+        $('#table').html(response.tableHtml)
+      })
+      console.log('searchquery', searchquery)
+
     })
-    console.log('searchquery',searchquery)
 
+
+    $(document).on('click','.page-link',function(){
+      const page =$(this).data('page');
+
+      console.log('page',page)
+      $.get("{% url 'index' %}",{page:page},function(response){
+          $('#table').html(response.tableHtml);
+          $('#page-nav').html(response.paginator);
+      })
+    })
   })
+
+
 
 </script>
 
